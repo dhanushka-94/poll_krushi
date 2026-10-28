@@ -61,16 +61,25 @@ header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:s
 .keyrow i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .rec{font-size:clamp(18px,1.8vw,22px);line-height:1.5;border-left:4px solid var(--paddy);padding:4px 0 4px 16px}
 .rec .en{display:block;font-size:.85em}
-.tablewrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
 th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
-th{color:var(--muted);font-weight:600}
+th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--field)}
+td.wrap{white-space:normal;max-width:220px}
 .admin{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .admin input{font:inherit;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--field-2);color:var(--ink);min-width:0;width:200px}
 .hdr-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .btn.warn{background:#5a3324;border-color:var(--bad);color:#ffd7c8}
 .btn.warn.armed{background:var(--bad);color:#fff;animation:p 1.2s infinite}
 .empty{color:var(--muted);text-align:center;padding:30px}
+.report-head{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.report-head h2{margin:0;font-family:var(--si);font-size:clamp(26px,3vw,36px);line-height:1.15}
+.report-head p{margin:4px 0 0;color:var(--muted)}
+.insights{display:grid;gap:10px}
+.insight{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.45}
+.insight b{color:var(--paddy)}
+.level-chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;color:var(--leaf-ink)}
+.level-chip.l0{background:var(--bad)}.level-chip.l1{background:var(--paddy)}.level-chip.l2{background:var(--leaf)}
 @media (max-width:860px){.join{grid-template-columns:1fr;min-height:0}}
 </style>
 </head>
@@ -110,23 +119,40 @@ th{color:var(--muted);font-weight:600}
   <section id="v-live" hidden><div class="grid" id="liveGrid"></div></section>
 
   <section id="v-eval" hidden style="display:grid;gap:18px">
+    <div class="report-head">
+      <div>
+        <div class="eyebrow">සම්පූර්ණ වාර්තාව · Full report</div>
+        <h2>ඇගයීම් වාර්තාව</h2>
+        <p class="en" id="reportMeta">Waiting for responses…</p>
+      </div>
+      <div class="admin">
+        <button class="btn primary" id="xlsx">Download Excel (.xlsx)</button>
+        <button class="btn" id="csv">Download CSV</button>
+      </div>
+    </div>
     <div class="kpis" id="kpis"></div>
     <div class="card wide"><h3>මට්ටම් බෙදීම<small>Level distribution</small></h3><div class="stack" id="stack"></div>
       <div class="keyrow"><span><i class="lv0"></i>ආරම්භක · Beginner (0–34)</span><span><i class="lv1"></i>මධ්‍යම · Intermediate (35–65)</span><span><i class="lv2"></i>උසස් · Advanced (66–100)</span></div></div>
-    <div class="card wide"><h3>නිර්දේශය<small>Recommendation for today's session</small></h3><div class="rec" id="rec"></div></div>
+    <div class="card wide"><h3>නිර්දේශය සහ ප්‍රධාන සොයාගැනීම්<small>Recommendation & key insights</small></h3>
+      <div class="rec" id="rec"></div>
+      <div class="insights" id="insights" style="margin-top:12px"></div></div>
     <div class="grid">
       <div class="card"><h3>කුසලතා – දුර්වලම සිට<small>Skills, weakest first (average 1–5)</small></h3><div class="bars" id="skillRank"></div></div>
       <div class="card"><h3>ප්‍රශ්නාවලිය<small>Quiz – % answered correctly</small></h3><div class="bars" id="quizBars"></div></div>
     </div>
-    <div class="card wide"><h3>සහභාගිකයින්<small>Each participant (anonymous)</small></h3><div class="tablewrap"><table id="tbl"></table></div></div>
+    <div class="grid" id="breakGrid"></div>
+    <div class="card wide"><h3>සියලු සහභාගිකයින්<small>Full roster — every answer</small></h3>
+      <div class="tablewrap"><table id="tbl"></table></div></div>
     <div class="card wide"><h3>පරිපාලනය<small>Admin</small></h3>
-      <div class="admin"><button class="btn primary" id="csv">Download CSV</button>
+      <div class="admin">
+        <button class="btn primary" id="xlsx2">Download Excel</button>
         <button class="btn warn" id="reset">Clear all responses</button><span id="resetMsg" class="en"></span></div>
-      <p class="en" style="margin:0">Click Clear twice to wipe all answers before the session starts.</p></div>
+      <p class="en" style="margin:0">Excel includes Summary, Participants, and Breakdowns sheets. Click Clear twice to wipe answers.</p></div>
   </section>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="questions.js"></script>
 <script>
 const P = window.POLL, Q = P.questions, $ = id => document.getElementById(id);
@@ -176,27 +202,71 @@ function renderLive(){
   }).join('');
 }
 
-function renderEval(){
+function labelOf(q, v){
+  if (!q) return '—';
+  if (q.type === 'phone') return v || '—';
+  if (q.type === 'multi') return (Array.isArray(v) ? v : []).map(k => (q.options[k]||['',''])[1]).join('; ') || '—';
+  if (q.type === 'scale') return Array.isArray(v) ? v.join(', ') : '—';
+  return (q.options[v]||['—','—'])[1];
+}
+function labelSi(q, v){
+  if (!q) return '—';
+  if (q.type === 'phone') return v || '—';
+  if (q.type === 'multi') return (Array.isArray(v) ? v : []).map(k => (q.options[k]||['',''])[0]).join('; ') || '—';
+  return (q.options[v]||['—','—'])[0];
+}
+function optBars(q){
+  const n = data.length, c = countOpts(q), mx = Math.max(1, ...c);
+  return q.options.map((o, k) => bar(o[0], o[1], `${c[k]} · ${pct(c[k], n)}%`, c[k]/mx*100)).join('');
+}
+function topOpt(id){
+  const q = Q.find(x => x.id === id), c = countOpts(q), k = c.indexOf(Math.max(...c));
+  return data.length && q ? q.options[k] : ['—','—'];
+}
+function buildReport(){
   const n = data.length;
   const scored = data.map(r => ({ r, s: P.score(r) }));
   const avg = n ? Math.round(scored.reduce((a, x) => a + x.s.readiness, 0) / n) : 0;
+  const quizAvg = n ? (scored.reduce((a, x) => a + x.s.quiz, 0) / n) : 0;
   const lv = [0,0,0]; scored.forEach(x => lv[x.s.level]++);
   const top = n ? lv.indexOf(Math.max(...lv)) : -1;
   const sq = Q.find(q => q.type === 'scale'), sa = skillAvgs(sq);
-  const ranked = sq.rows.map((row, i) => ({ row, a: sa[i] })).sort((x, y) => x.a - y.a);
-  const topOpt = id => { const q = Q.find(x => x.id === id), c = countOpts(q), k = c.indexOf(Math.max(...c)); return n ? q.options[k] : ['—','—']; };
+  const ranked = sq.rows.map((row, i) => ({ row, a: sa[i], i })).sort((x, y) => x.a - y.a);
   const learn = topOpt('learn'), chal = topOpt('challenge');
+  const aiNone = Q.find(q => q.id === 'aitools');
+  const aiUsers = n ? data.filter(r => {
+    const a = r.aitools || [];
+    return a.length && !(a.length === 1 && a[0] === (aiNone.options.length - 1));
+  }).length : 0;
+  const netAlways = n ? data.filter(r => r.internet === 0).length : 0;
+  const officialYes = n ? data.filter(r => r.official === 0).length : 0;
+  const scores = scored.map(x => x.s.readiness).sort((a,b)=>a-b);
+  const median = n ? (n % 2 ? scores[(n-1)/2] : Math.round((scores[n/2-1]+scores[n/2])/2)) : 0;
+  return { n, scored, avg, quizAvg, lv, top, sq, sa, ranked, learn, chal, aiUsers, netAlways, officialYes, median };
+}
+
+function renderEval(){
+  const R = buildReport();
+  const { n, scored, avg, quizAvg, lv, top, ranked, learn, chal, aiUsers, netAlways, officialYes, median } = R;
+  $('reportMeta').textContent = n
+    ? `${n} participants · avg readiness ${avg}/100 · generated ${new Date().toLocaleString()}`
+    : 'Waiting for responses…';
 
   $('kpis').innerHTML = [
     [n, 'ප්‍රතිචාර · Responses'],
     [avg + '<small style="font-size:.5em;color:var(--muted)"> /100</small>', 'සාමාන්‍ය සූදානම · Avg readiness'],
-    [top < 0 ? '—' : `<span class="si">${esc(P.levels[top][0])}</span>`, top < 0 ? 'බහුතර මට්ටම · Main level' : 'බහුතර මට්ටම · Main level: ' + P.levels[top][1]],
-    [`<span class="si" style="font-size:.62em">${esc(learn[0])}</span>`, 'වැඩිම ඉල්ලීම · Most wanted: ' + esc(learn[1])]
+    [median + '<small style="font-size:.5em;color:var(--muted)"> /100</small>', 'මධ්‍යස්ථය · Median score'],
+    [n ? quizAvg.toFixed(1) + '/' + (scored[0]?.s.quizTotal || 3) : '—', 'සාමාන්‍ය ප්‍රශ්නාවලිය · Avg quiz'],
+    [n ? pct(aiUsers, n) + '%' : '—', 'AI භාවිත කරන්නන් · Use AI tools'],
+    [n ? pct(netAlways, n) + '%' : '—', 'සැමවිටම අන්තර්ජාලය · Always online'],
+    [n ? pct(officialYes, n) + '%' : '—', 'නිතිපතා රාජකාරී භාවිතය · Official use regularly'],
+    [top < 0 ? '—' : `<span class="si">${esc(P.levels[top][0])}</span>`, top < 0 ? 'බහුතර මට්ටම · Main level' : 'Main level: ' + P.levels[top][1]]
   ].map(([v, l]) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('');
 
-  $('stack').innerHTML = n ? lv.map((c, i) => c ? `<div class="lv${i}" style="flex:${c}">${pct(c,n)}%</div>` : '').join('') : '';
+  $('stack').innerHTML = n ? lv.map((c, i) => c ? `<div class="lv${i}" style="flex:${c}">${c} · ${pct(c,n)}%</div>` : '').join('') : '';
 
   const weak = ranked.slice(0, 2).map(x => x.row);
+  const strong = ranked.slice(-1).map(x => x.row);
   const recs = [
     ['බොහෝ දෙනා ආරම්භක මට්ටමේ සිටී. මූලික කරුණු සහ ප්‍රායෝගික අභ්‍යාස වෙත වැඩි කාලයක් දෙන්න.', 'Most are beginners. Spend more time on basics and hands-on practice.'],
     ['බොහෝ දෙනා මධ්‍යම මට්ටමේ සිටී. මූලික කරුණු ඉක්මනින් සලකා, අන්තර්ගත ගුණාත්මකභාවය සහ සැලසුම් කිරීම වෙත යොමු වන්න.', 'Most are intermediate. Cover basics quickly, then focus on content quality and planning.'],
@@ -204,7 +274,16 @@ function renderEval(){
   ];
   $('rec').innerHTML = top < 0 ? '<span class="en">Waiting for answers…</span>' :
     `${esc(recs[top][0])} වැඩි අවධානය: ${esc(weak.map(w => w[0]).join(', '))}.
-     <span class="en">${esc(recs[top][1])} Focus on: ${esc(weak.map(w => w[1]).join(', '))}. Biggest challenge in the room: ${esc(chal[1])} (${esc(chal[0])}).</span>`;
+     <span class="en">${esc(recs[top][1])} Focus on: ${esc(weak.map(w => w[1]).join(', '))}. Biggest challenge: ${esc(chal[1])} (${esc(chal[0])}).</span>`;
+
+  $('insights').innerHTML = n ? [
+    `<div class="insight"><b>වැඩිම ඉල්ලීම · Top learning ask:</b> ${esc(learn[0])} · ${esc(learn[1])}</div>`,
+    `<div class="insight"><b>ලොකුම බාධාව · Top challenge:</b> ${esc(chal[0])} · ${esc(chal[1])}</div>`,
+    `<div class="insight"><b>දුර්වලතම කුසලතා · Weakest skills:</b> ${esc(weak.map(w => w[1]).join(', '))}</div>`,
+    `<div class="insight"><b>ශක්තිමත්ම කුසලතාව · Strongest skill:</b> ${esc(strong.map(w => w[1]).join(', '))}</div>`,
+    `<div class="insight"><b>AI භාවිතය · AI adoption:</b> ${aiUsers}/${n} (${pct(aiUsers,n)}%) use at least one AI tool</div>`,
+    `<div class="insight"><b>මට්ටම් · Levels:</b> Beginner ${lv[0]} (${pct(lv[0],n)}%) · Intermediate ${lv[1]} (${pct(lv[1],n)}%) · Advanced ${lv[2]} (${pct(lv[2],n)}%)</div>`
+  ].join('') : '';
 
   $('skillRank').innerHTML = ranked.map(x => bar(x.row[0], x.row[1], x.a.toFixed(1), (x.a/5)*100, x.a < 2.5 ? 'low' : x.a < 3.5 ? 'gold' : '')).join('');
   $('quizBars').innerHTML = Q.filter(q => q.type === 'quiz').map((q, i) => {
@@ -212,11 +291,39 @@ function renderEval(){
     return bar('Q' + (i+1) + ' · ' + q.si, q.en, p + '%', p, p < 50 ? 'low' : 'correct');
   }).join('');
 
-  const roleQ = Q.find(q => q.id === 'role');
-  const ageQ = Q.find(q => q.id === 'age');
-  $('tbl').innerHTML = `<tr><th>#</th><th>නම · Name</th><th>වයස · Age</th><th>තනතුර · Role</th><th>WhatsApp</th><th>Skill avg</th><th>Quiz</th><th>Score</th><th>Level</th></tr>` +
-    (n ? scored.map((x, i) => `<tr><td>${i+1}</td><td>${esc(x.r.name || '—')}</td><td>${esc((ageQ.options[x.r.age]||['—'])[1])}</td><td>${esc((roleQ.options[x.r.role]||['—'])[1])}</td><td>${esc(x.r.whatsapp || '—')}</td><td>${x.s.skillAvg.toFixed(1)}</td><td>${x.s.quiz}/${x.s.quizTotal}</td><td>${x.s.readiness}</td><td>${esc(P.levels[x.s.level][1])}</td></tr>`).join('')
-       : '<tr><td colspan="9" class="en">No answers yet</td></tr>');
+  const breakIds = ['age','role','devices','internet','platforms','official','aitools','aifor','learn','challenge'];
+  $('breakGrid').innerHTML = breakIds.map(id => {
+    const q = Q.find(x => x.id === id);
+    if (!q) return '';
+    return `<div class="card"><h3>${esc(q.si)}<small>${esc(q.en)}</small></h3><div class="bars">${n ? optBars(q) : '<div class="empty">No data</div>'}</div></div>`;
+  }).join('');
+
+  const cols = [
+    ['#', x => x.i + 1],
+    ['නම · Name', x => x.r.name || '—'],
+    ['WhatsApp', x => x.r.whatsapp || '—'],
+    ['වයස · Age', x => labelOf(Q.find(q=>q.id==='age'), x.r.age)],
+    ['තනතුර · Role', x => labelOf(Q.find(q=>q.id==='role'), x.r.role)],
+    ['උපාංග · Devices', x => labelOf(Q.find(q=>q.id==='devices'), x.r.devices)],
+    ['අන්තර්ජාලය · Internet', x => labelOf(Q.find(q=>q.id==='internet'), x.r.internet)],
+    ['සමාජ මාධ්‍ය · Platforms', x => labelOf(Q.find(q=>q.id==='platforms'), x.r.platforms)],
+    ['රාජකාරී භාවිතය · Official', x => labelOf(Q.find(q=>q.id==='official'), x.r.official)],
+    ['AI මෙවලම් · AI tools', x => labelOf(Q.find(q=>q.id==='aitools'), x.r.aitools)],
+    ['AI සඳහා · AI for', x => labelOf(Q.find(q=>q.id==='aifor'), x.r.aifor)],
+    ['ඉගෙන ගැනීමට · Learn', x => labelOf(Q.find(q=>q.id==='learn'), x.r.learn)],
+    ['බාධාව · Challenge', x => labelOf(Q.find(q=>q.id==='challenge'), x.r.challenge)],
+    ['Skill avg', x => x.s.skillAvg.toFixed(1)],
+    ['Quiz', x => `${x.s.quiz}/${x.s.quizTotal}`],
+    ['Score', x => x.s.readiness],
+    ['Level', x => P.levels[x.s.level][1]],
+    ['Time', x => x.r.t ? new Date(x.r.t).toLocaleString() : '—']
+  ];
+  const rows = scored.map((x, i) => ({ ...x, i }));
+  $('tbl').innerHTML = `<tr>${cols.map(c => `<th>${c[0]}</th>`).join('')}</tr>` +
+    (n ? rows.map(x => `<tr>${cols.map((c, ci) => `<td class="${ci>=5&&ci<=12?'wrap':''}">${
+      c[0]==='Level' ? `<span class="level-chip l${x.s.level}">${esc(c[1](x))}</span>` : esc(c[1](x))
+    }</td>`).join('')}</tr>`).join('')
+       : `<tr><td colspan="${cols.length}" class="en">No answers yet</td></tr>`);
 }
 
 async function refresh(){
@@ -233,26 +340,97 @@ async function refresh(){
 }
 refresh(); setInterval(refresh, 3000);
 
-// CSV
-$('csv').onclick = () => {
-  const head = ['#','time','name'];
-  Q.forEach(q => q.type === 'scale' ? q.rows.forEach(r => head.push('skill: ' + r[2])) : head.push(q.id));
-  head.push('quiz_correct','readiness','level');
-  const lines = [head];
+function participantRows(){
+  const head = ['#','Submitted at','Name','WhatsApp'];
+  Q.forEach(q => {
+    if (q.type === 'scale') q.rows.forEach(r => head.push('Skill: ' + r[2]));
+    else if (q.type === 'phone') { /* already as WhatsApp */ }
+    else head.push(q.en);
+  });
+  head.push('Quiz correct','Quiz total','Skill avg','Readiness /100','Level EN','Level SI');
+  const rows = [head];
   data.forEach((r, i) => {
-    const s = P.score(r), row = [i+1, new Date(r.t).toLocaleString(), r.name || ''];
+    const s = P.score(r);
+    const row = [i+1, r.t ? new Date(r.t).toLocaleString() : '', r.name || '', r.whatsapp || ''];
     Q.forEach(q => {
       if (q.type === 'scale') q.rows.forEach((_, ri) => row.push((r.skills||[])[ri] ?? ''));
-      else if (q.type === 'phone') row.push(r[q.id] || '');
-      else { const a = r[q.id]; row.push((Array.isArray(a) ? a : [a]).map(k => (q.options[k]||['',''])[1]).join('; ')); }
+      else if (q.type === 'phone') { /* skip */ }
+      else if (q.type === 'multi') row.push(labelOf(q, r[q.id]));
+      else row.push(labelOf(q, r[q.id]));
     });
-    row.push(s.quiz, s.readiness, P.levels[s.level][1]); lines.push(row);
+    row.push(s.quiz, s.quizTotal, +s.skillAvg.toFixed(2), s.readiness, P.levels[s.level][1], P.levels[s.level][0]);
+    rows.push(row);
   });
-  const csv = '﻿' + lines.map(l => l.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
+  return rows;
+}
+
+function summaryRows(){
+  const R = buildReport();
+  const lines = [
+    ['Digital Marketing for Agriculture — Evaluation Report'],
+    ['Generated', new Date().toLocaleString()],
+    ['Participants', R.n],
+    ['Average readiness', R.avg],
+    ['Median readiness', R.median],
+    ['Average quiz', R.n ? R.quizAvg.toFixed(2) : 0],
+    ['AI users', `${R.aiUsers} (${pct(R.aiUsers, R.n)}%)`],
+    ['Always internet', `${R.netAlways} (${pct(R.netAlways, R.n)}%)`],
+    ['Official use regularly', `${R.officialYes} (${pct(R.officialYes, R.n)}%)`],
+    ['Main level', R.top < 0 ? '' : P.levels[R.top][1]],
+    ['Top learning ask', R.learn[1]],
+    ['Top challenge', R.chal[1]],
+    [],
+    ['Level', 'Count', '%'],
+    ['Beginner', R.lv[0], pct(R.lv[0], R.n)],
+    ['Intermediate', R.lv[1], pct(R.lv[1], R.n)],
+    ['Advanced', R.lv[2], pct(R.lv[2], R.n)],
+    [],
+    ['Skill (weakest first)', 'Average /5']
+  ];
+  R.ranked.forEach(x => lines.push([x.row[1], +x.a.toFixed(2)]));
+  lines.push([], ['Quiz question', '% correct']);
+  Q.filter(q => q.type === 'quiz').forEach((q, i) => {
+    const ok = data.filter(r => r[q.id] === q.correct).length;
+    lines.push(['Q'+(i+1)+': '+q.en, pct(ok, R.n)]);
+  });
+  return lines;
+}
+
+function breakdownRows(){
+  const rows = [['Question', 'Option (EN)', 'Option (SI)', 'Count', '%']];
+  Q.filter(q => q.options).forEach(q => {
+    const c = countOpts(q);
+    q.options.forEach((o, k) => rows.push([q.en, o[1], o[0], c[k], pct(c[k], data.length)]));
+  });
+  return rows;
+}
+
+function downloadCsv(){
+  const lines = participantRows();
+  const csv = '\ufeff' + lines.map(l => l.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = 'digital-marketing-poll-results.csv'; a.click();
-};
+  a.download = 'krushi-poll-participants.csv'; a.click();
+}
+
+function downloadExcel(){
+  if (typeof XLSX === 'undefined') { alert('Excel library failed to load. Try CSV instead.'); return; }
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet(summaryRows());
+  const ws2 = XLSX.utils.aoa_to_sheet(participantRows());
+  const ws3 = XLSX.utils.aoa_to_sheet(breakdownRows());
+  ws1['!cols'] = [{ wch: 36 }, { wch: 28 }, { wch: 12 }];
+  ws2['!cols'] = participantRows()[0].map(() => ({ wch: 18 }));
+  ws3['!cols'] = [{ wch: 40 }, { wch: 36 }, { wch: 36 }, { wch: 10 }, { wch: 8 }];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
+  XLSX.utils.book_append_sheet(wb, ws2, 'Participants');
+  XLSX.utils.book_append_sheet(wb, ws3, 'Breakdowns');
+  XLSX.writeFile(wb, 'krushi-poll-report.xlsx');
+}
+
+$('csv').onclick = downloadCsv;
+$('xlsx').onclick = downloadExcel;
+$('xlsx2').onclick = downloadExcel;
 
 // Reset (two clicks to confirm). Header + Evaluation share the same flow.
 const ADMIN_KEY = 'krushi-admin-2026';
