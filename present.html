@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="si">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ප්‍රතිඵල තිරය | Presenter Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@600;800&family=Noto+Sans+Sinhala:wght@400;600&family=Figtree:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+.wrap{max-width:1280px;margin:0 auto;display:grid;gap:22px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.tabs{display:flex;gap:6px;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:5px;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;border-radius:999px;padding:9px 16px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--leaf);color:var(--leaf-ink)}
+.live{display:inline-flex;gap:10px;align-items:center;font-weight:700;font-variant-numeric:tabular-nums}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--leaf);box-shadow:0 0 0 0 rgba(134,196,84,.7);animation:p 1.6s infinite}
+@keyframes p{70%{box-shadow:0 0 0 12px rgba(134,196,84,0)}100%{box-shadow:0 0 0 0 rgba(134,196,84,0)}}
+.banner{background:#5a3324;border:1px solid var(--bad);border-radius:14px;padding:12px 16px}
+/* Join view */
+.join{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,5vw,64px);align-items:center;min-height:70vh}
+.join h1{font-family:var(--si);font-weight:800;font-size:clamp(34px,5.4vw,72px);line-height:1.12;margin:12px 0 6px;text-wrap:balance}
+.join .sub{font-size:clamp(18px,2.2vw,28px);color:var(--muted);font-weight:600;margin:0 0 26px}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.steps li{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:center;font-size:clamp(16px,1.7vw,22px)}
+.steps b{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--leaf);color:var(--leaf-ink);font-weight:800}
+.steps small{display:block;color:var(--muted);font-size:.78em}
+.qrside{display:grid;gap:16px;justify-items:center}
+.qrcard{background:#fff;color:var(--field);border-radius:22px;padding:22px;display:grid;gap:10px;justify-items:center;width:min(100%,440px);box-shadow:0 30px 60px -20px rgba(0,0,0,.55)}
+#qr{width:100%;aspect-ratio:1}
+#qr img,#qr canvas{width:100%!important;height:auto!important;display:block}
+.qrcard .si{font-size:26px}
+.url{font-size:15px;font-weight:600;color:#3d5e36;word-break:break-all;text-align:center}
+.count{font-size:clamp(40px,5vw,64px);font-weight:800;color:var(--paddy);font-variant-numeric:tabular-nums;line-height:1}
+/* Cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:16px}
+.card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.card h3{margin:0;font-family:var(--si);font-size:22px;line-height:1.2}
+.card h3 small{display:block;font-family:var(--body);font-weight:400;font-size:14px;color:var(--muted)}
+.card.wide{grid-column:1/-1}
+.bars{display:grid;gap:9px}
+.b{display:grid;gap:4px}
+.b .lab{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.b .lab span:first-child{min-width:0}
+.b .lab em{font-style:normal;color:var(--muted);font-size:13px}
+.b .lab b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.track{height:12px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.fill{height:100%;border-radius:99px;background:var(--leaf);transition:width .6s ease}
+.fill.gold{background:var(--paddy)} .fill.low{background:var(--bad)}
+.fill.correct{background:var(--good)}
+/* Evaluation */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:14px}
+.kpi{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:4px}
+.kpi b{font-size:clamp(30px,3.4vw,44px);font-variant-numeric:tabular-nums;color:var(--paddy);line-height:1.1}
+.kpi b.si{color:var(--leaf)}
+.kpi span{color:var(--muted);font-size:14px}
+.stack{display:flex;height:34px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.08)}
+.stack div{display:grid;place-items:center;font-weight:800;font-size:14px;color:var(--leaf-ink);min-width:0;overflow:hidden;transition:flex .6s}
+.lv0{background:var(--bad)} .lv1{background:var(--paddy)} .lv2{background:var(--leaf)}
+.keyrow{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.keyrow i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.rec{font-size:clamp(18px,1.8vw,22px);line-height:1.5;border-left:4px solid var(--paddy);padding:4px 0 4px 16px}
+.rec .en{display:block;font-size:.85em}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:600}
+.admin{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.admin input{font:inherit;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--field-2);color:var(--ink);min-width:0;width:200px}
+.empty{color:var(--muted);text-align:center;padding:30px}
+@media (max-width:860px){.join{grid-template-columns:1fr;min-height:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">කෘෂිකර්මය සඳහා ඩිජිටල් අලෙවිකරණය</div>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-v="join" aria-selected="true">QR · සම්බන්ධ වන්න</button>
+      <button role="tab" data-v="live" aria-selected="false">සජීවී ප්‍රතිඵල · Live</button>
+      <button role="tab" data-v="eval" aria-selected="false">ඇගයීම · Evaluation</button>
+    </div>
+    <div class="live"><span class="pulse"></span><span id="n">0</span>&nbsp;ප්‍රතිචාර · responses</div>
+  </header>
+  <div class="banner" id="banner" hidden></div>
+
+  <section id="v-join" class="join">
+    <div>
+      <div class="eyebrow">පූර්ව ඇගයීම · Pre-training check</div>
+      <h1>කෘෂිකර්මය සඳහා<br>ඩිජිටල් අලෙවිකරණය</h1>
+      <p class="sub">Digital Marketing for Agriculture</p>
+      <ol class="steps">
+        <li><b>1</b><span>ජංගම දුරකථනයේ කැමරාව විවෘත කරන්න<small>Open your phone camera</small></span></li>
+        <li><b>2</b><span>QR කේතය ස්කෑන් කරන්න<small>Scan the QR code</small></span></li>
+        <li><b>3</b><span>විනාඩි 3කින් පිළිතුරු දෙන්න<small>Answer in 3 minutes · no names collected</small></span></li>
+      </ol>
+    </div>
+    <div class="qrside">
+      <div class="qrcard"><div class="si">ස්කෑන් කරන්න · Scan me</div><div id="qr" role="img" aria-label="QR code to join the poll"></div><div class="url" id="url"></div></div>
+      <div style="text-align:center"><div class="count" id="bigN">0</div><div class="en">දැනටමත් පිළිතුරු දුන්නා · have answered</div></div>
+    </div>
+  </section>
+
+  <section id="v-live" hidden><div class="grid" id="liveGrid"></div></section>
+
+  <section id="v-eval" hidden style="display:grid;gap:18px">
+    <div class="kpis" id="kpis"></div>
+    <div class="card wide"><h3>මට්ටම් බෙදීම<small>Level distribution</small></h3><div class="stack" id="stack"></div>
+      <div class="keyrow"><span><i class="lv0"></i>ආරම්භක · Beginner (0–34)</span><span><i class="lv1"></i>මධ්‍යම · Intermediate (35–65)</span><span><i class="lv2"></i>උසස් · Advanced (66–100)</span></div></div>
+    <div class="card wide"><h3>නිර්දේශය<small>Recommendation for today's session</small></h3><div class="rec" id="rec"></div></div>
+    <div class="grid">
+      <div class="card"><h3>කුසලතා – දුර්වලම සිට<small>Skills, weakest first (average 1–5)</small></h3><div class="bars" id="skillRank"></div></div>
+      <div class="card"><h3>ප්‍රශ්නාවලිය<small>Quiz – % answered correctly</small></h3><div class="bars" id="quizBars"></div></div>
+    </div>
+    <div class="card wide"><h3>සහභාගිකයින්<small>Each participant (anonymous)</small></h3><div class="tablewrap"><table id="tbl"></table></div></div>
+    <div class="card wide"><h3>පරිපාලනය<small>Admin</small></h3>
+      <div class="admin"><button class="btn primary" id="csv">Download CSV</button>
+        <label for="key" class="en">Admin key</label><input id="key" type="password" autocomplete="off">
+        <button class="btn" id="reset">Clear all responses</button><span id="resetMsg" class="en"></span></div>
+      <p class="en" style="margin:0">Clear the test answers before the session starts. Needs the ADMIN_KEY you set in Vercel.</p></div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="questions.js"></script>
+<script>
+const P = window.POLL, Q = P.questions, $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const joinUrl = location.origin + '/';
+let data = [], armed = false;
+
+// QR
+new QRCode($('qr'), { text: joinUrl, width: 512, height: 512, colorDark: '#123a22', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+$('url').textContent = joinUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+// Tabs (also via #join / #live / #eval)
+function view(v){
+  ['join','live','eval'].forEach(x => { $('v-'+x).hidden = x !== v; });
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.v === v));
+  if (location.hash !== '#'+v) history.replaceState(null, '', '#'+v);
+}
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => view(b.dataset.v));
+const startView = location.hash.slice(1);
+view(['join','live','eval'].includes(startView) ? startView : 'join');
+
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const bar = (s, e, valTxt, w, cls='') => `<div class="b"><div class="lab"><span>${esc(s)} <em>${esc(e)}</em></span><b>${valTxt}</b></div><div class="track"><div class="fill ${cls}" style="width:${w}%"></div></div></div>`;
+
+function countOpts(q){
+  const c = q.options.map(() => 0);
+  data.forEach(r => { const a = r[q.id]; (Array.isArray(a) ? a : [a]).forEach(k => { if (c[k] !== undefined) c[k]++; }); });
+  return c;
+}
+function skillAvgs(q){
+  return q.rows.map((row, ri) => { const v = data.map(r => (r.skills||[])[ri]).filter(x => x >= 1); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : 0; });
+}
+
+function renderLive(){
+  const n = data.length;
+  if (!n) { $('liveGrid').innerHTML = '<div class="empty card wide">තවම පිළිතුරු නැත · No answers yet. Show the QR tab first.</div>'; return; }
+  $('liveGrid').innerHTML = Q.map(q => {
+    let body = '';
+    if (q.type === 'scale') {
+      body = skillAvgs(q).map((a, ri) => bar(q.rows[ri][0], q.rows[ri][1], a.toFixed(1)+' / 5', (a/5)*100, a < 2.5 ? 'low' : a < 3.5 ? 'gold' : '')).join('');
+    } else {
+      const c = countOpts(q), mx = Math.max(1, ...c);
+      body = q.options.map((o, k) => bar(o[0], o[1], `${c[k]} · ${pct(c[k], n)}%`, c[k]/mx*100,
+        q.type === 'quiz' ? (k === q.correct ? 'correct' : 'low') : '')).join('');
+    }
+    return `<div class="card ${q.type==='scale'?'wide':''}"><h3>${esc(q.si)}<small>${esc(q.en)}${q.type==='quiz'?' · ✓ green = correct':''}</small></h3><div class="bars">${body}</div></div>`;
+  }).join('');
+}
+
+function renderEval(){
+  const n = data.length;
+  const scored = data.map(r => ({ r, s: P.score(r) }));
+  const avg = n ? Math.round(scored.reduce((a, x) => a + x.s.readiness, 0) / n) : 0;
+  const lv = [0,0,0]; scored.forEach(x => lv[x.s.level]++);
+  const top = n ? lv.indexOf(Math.max(...lv)) : -1;
+  const sq = Q.find(q => q.type === 'scale'), sa = skillAvgs(sq);
+  const ranked = sq.rows.map((row, i) => ({ row, a: sa[i] })).sort((x, y) => x.a - y.a);
+  const topOpt = id => { const q = Q.find(x => x.id === id), c = countOpts(q), k = c.indexOf(Math.max(...c)); return n ? q.options[k] : ['—','—']; };
+  const learn = topOpt('learn'), chal = topOpt('challenge');
+
+  $('kpis').innerHTML = [
+    [n, 'ප්‍රතිචාර · Responses'],
+    [avg + '<small style="font-size:.5em;color:var(--muted)"> /100</small>', 'සාමාන්‍ය සූදානම · Avg readiness'],
+    [top < 0 ? '—' : `<span class="si">${esc(P.levels[top][0])}</span>`, top < 0 ? 'බහුතර මට්ටම · Main level' : 'බහුතර මට්ටම · Main level: ' + P.levels[top][1]],
+    [`<span class="si" style="font-size:.62em">${esc(learn[0])}</span>`, 'වැඩිම ඉල්ලීම · Most wanted: ' + esc(learn[1])]
+  ].map(([v, l]) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('');
+
+  $('stack').innerHTML = n ? lv.map((c, i) => c ? `<div class="lv${i}" style="flex:${c}">${pct(c,n)}%</div>` : '').join('') : '';
+
+  const weak = ranked.slice(0, 2).map(x => x.row);
+  const recs = [
+    ['බොහෝ දෙනා ආරම්භක මට්ටමේ සිටී. මූලික කරුණු සහ ප්‍රායෝගික අභ්‍යාස වෙත වැඩි කාලයක් දෙන්න.', 'Most are beginners. Spend more time on basics and hands-on practice.'],
+    ['බොහෝ දෙනා මධ්‍යම මට්ටමේ සිටී. මූලික කරුණු ඉක්මනින් සලකා, අන්තර්ගත ගුණාත්මකභාවය සහ සැලසුම් කිරීම වෙත යොමු වන්න.', 'Most are intermediate. Cover basics quickly, then focus on content quality and planning.'],
+    ['බොහෝ දෙනා උසස් මට්ටමේ සිටී. උපාය මාර්ග, Insights සහ දැන්වීම් වෙත යොමු වන්න.', 'Most are advanced. Focus on strategy, insights and paid ads.']
+  ];
+  $('rec').innerHTML = top < 0 ? '<span class="en">Waiting for answers…</span>' :
+    `${esc(recs[top][0])} වැඩි අවධානය: ${esc(weak.map(w => w[0]).join(', '))}.
+     <span class="en">${esc(recs[top][1])} Focus on: ${esc(weak.map(w => w[1]).join(', '))}. Biggest challenge in the room: ${esc(chal[1])} (${esc(chal[0])}).</span>`;
+
+  $('skillRank').innerHTML = ranked.map(x => bar(x.row[0], x.row[1], x.a.toFixed(1), (x.a/5)*100, x.a < 2.5 ? 'low' : x.a < 3.5 ? 'gold' : '')).join('');
+  $('quizBars').innerHTML = Q.filter(q => q.type === 'quiz').map((q, i) => {
+    const ok = data.filter(r => r[q.id] === q.correct).length, p = pct(ok, n);
+    return bar('Q' + (i+1) + ' · ' + q.si, q.en, p + '%', p, p < 50 ? 'low' : 'correct');
+  }).join('');
+
+  const roleQ = Q.find(q => q.id === 'role');
+  $('tbl').innerHTML = `<tr><th>#</th><th>තනතුර · Role</th><th>Skill avg</th><th>Quiz</th><th>Score</th><th>Level</th></tr>` +
+    (n ? scored.map((x, i) => `<tr><td>${i+1}</td><td>${esc((roleQ.options[x.r.role]||['—'])[1])}</td><td>${x.s.skillAvg.toFixed(1)}</td><td>${x.s.quiz}/${x.s.quizTotal}</td><td>${x.s.readiness}</td><td>${esc(P.levels[x.s.level][1])}</td></tr>`).join('')
+       : '<tr><td colspan="6" class="en">No answers yet</td></tr>');
+}
+
+async function refresh(){
+  try {
+    const r = await fetch('/api/results', { cache: 'no-store' });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Server error');
+    data = d.responses || []; $('banner').hidden = true;
+  } catch (e) {
+    $('banner').hidden = false; $('banner').textContent = 'Results not loading: ' + e.message;
+  }
+  $('n').textContent = data.length; $('bigN').textContent = data.length;
+  renderLive(); renderEval();
+}
+refresh(); setInterval(refresh, 3000);
+
+// CSV
+$('csv').onclick = () => {
+  const head = ['#','time'];
+  Q.forEach(q => q.type === 'scale' ? q.rows.forEach(r => head.push('skill: ' + r[2])) : head.push(q.id));
+  head.push('quiz_correct','readiness','level');
+  const lines = [head];
+  data.forEach((r, i) => {
+    const s = P.score(r), row = [i+1, new Date(r.t).toLocaleString()];
+    Q.forEach(q => {
+      if (q.type === 'scale') q.rows.forEach((_, ri) => row.push((r.skills||[])[ri] ?? ''));
+      else { const a = r[q.id]; row.push((Array.isArray(a) ? a : [a]).map(k => (q.options[k]||['',''])[1]).join('; ')); }
+    });
+    row.push(s.quiz, s.readiness, P.levels[s.level][1]); lines.push(row);
+  });
+  const csv = '﻿' + lines.map(l => l.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'digital-marketing-poll-results.csv'; a.click();
+};
+
+// Reset (two clicks to confirm)
+$('reset').onclick = async () => {
+  if (!armed) { armed = true; $('reset').textContent = 'Click again to delete everything'; $('resetMsg').textContent = ''; setTimeout(() => { armed = false; $('reset').textContent = 'Clear all responses'; }, 5000); return; }
+  armed = false; $('reset').textContent = 'Clear all responses';
+  const r = await fetch('/api/reset', { method: 'POST', headers: { 'x-admin-key': $('key').value } });
+  const d = await r.json().catch(() => ({}));
+  $('resetMsg').textContent = r.ok ? 'Cleared ✓' : (d.error || 'Failed');
+  refresh();
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+/* Paddy-field palette: deep field green, young-leaf green, harvest gold. One deliberate dark look for phones and projector. */
+:root{
+  --field:#123a22; --field-2:#0b2716; --panel:#184a2c; --line:rgba(255,255,255,.14);
+  --leaf:#86c454; --leaf-ink:#0b2716; --paddy:#f2b54b; --ink:#f3f6ee; --muted:#b5cbab;
+  --good:#86c454; --warn:#f2b54b; --bad:#e8785a;
+  --si:"Abhaya Libre","Noto Sans Sinhala",Georgia,serif;
+  --body:"Figtree","Noto Sans Sinhala",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:radial-gradient(130% 80% at 90% 0%,#1f5634 0%,var(--field) 45%,var(--field-2) 100%) fixed;color:var(--ink);
+  font-family:var(--body);font-size:16px;line-height:1.45;
+  padding:max(14px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--paddy);outline-offset:2px}
+.si{font-family:var(--si);font-weight:800}
+.en{color:var(--muted)}
+.eyebrow{display:inline-flex;gap:10px;align-items:center;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--paddy);font-weight:600}
+.eyebrow::before{content:"";width:24px;height:2px;background:var(--paddy)}
+.btn{border:1.5px solid var(--leaf);background:transparent;border-radius:999px;padding:12px 22px;font-weight:600}
+.btn.primary{background:var(--leaf);color:var(--leaf-ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
