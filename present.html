@@ -121,9 +121,8 @@ th{color:var(--muted);font-weight:600}
     <div class="card wide"><h3>සහභාගිකයින්<small>Each participant (anonymous)</small></h3><div class="tablewrap"><table id="tbl"></table></div></div>
     <div class="card wide"><h3>පරිපාලනය<small>Admin</small></h3>
       <div class="admin"><button class="btn primary" id="csv">Download CSV</button>
-        <label for="key" class="en">Admin key</label><input id="key" type="password" autocomplete="off">
-        <button class="btn" id="reset">Clear all responses</button><span id="resetMsg" class="en"></span></div>
-      <p class="en" style="margin:0">Clear the test answers before the session starts. Needs the ADMIN_KEY you set in Vercel.</p></div>
+        <button class="btn warn" id="reset">Clear all responses</button><span id="resetMsg" class="en"></span></div>
+      <p class="en" style="margin:0">Click Clear twice to wipe all answers before the session starts.</p></div>
   </section>
 </div>
 
@@ -256,14 +255,9 @@ $('csv').onclick = () => {
 };
 
 // Reset (two clicks to confirm). Header + Evaluation share the same flow.
-const KEY_STORE = 'krushi-admin-key';
-try { const k = sessionStorage.getItem(KEY_STORE); if (k) $('key').value = k; } catch {}
+const ADMIN_KEY = 'krushi-admin-2026';
 
 async function doReset(btn, msgEl) {
-  const key = ($('key').value || '').trim() || prompt('Admin key') || '';
-  if (!key) { if (msgEl) msgEl.textContent = 'Admin key required'; return; }
-  $('key').value = key;
-  try { sessionStorage.setItem(KEY_STORE, key); } catch {}
   if (!armed) {
     armed = true;
     btn.textContent = 'Click again to delete';
@@ -284,11 +278,10 @@ async function doReset(btn, msgEl) {
   $('resetTop').textContent = $('resetTop').dataset.label;
   $('reset').classList.remove('armed');
   $('resetTop').classList.remove('armed');
-  const r = await fetch('/api/reset', { method: 'POST', headers: { 'x-admin-key': key } });
+  const r = await fetch('/api/reset', { method: 'POST', headers: { 'x-admin-key': ADMIN_KEY } });
   const d = await r.json().catch(() => ({}));
   const ok = r.ok ? 'Cleared ✓' : (d.error || 'Failed');
   if (msgEl) msgEl.textContent = ok;
-  else alert(ok);
   refresh();
 }
 
