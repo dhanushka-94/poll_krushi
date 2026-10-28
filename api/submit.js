@@ -1,7 +1,7 @@
 import { redis, KEY, fail } from './_db.js';
 
 const SINGLE = { age: 5, role: 5, internet: 3, official: 3, learn: 5, challenge: 5, q1: 4, q2: 4, q3: 4 };
-const MULTI = { devices: 4, platforms: 6 };
+const MULTI = { devices: 4, platforms: 6, aitools: 6, aifor: 6 };
 const SKILL_ROWS = 6;
 
 const isInt = (v, max) => Number.isInteger(v) && v >= 0 && v < max;
