@@ -67,6 +67,9 @@ th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white
 th{color:var(--muted);font-weight:600}
 .admin{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .admin input{font:inherit;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--field-2);color:var(--ink);min-width:0;width:200px}
+.hdr-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn.warn{background:#5a3324;border-color:var(--bad);color:#ffd7c8}
+.btn.warn.armed{background:var(--bad);color:#fff;animation:p 1.2s infinite}
 .empty{color:var(--muted);text-align:center;padding:30px}
 @media (max-width:860px){.join{grid-template-columns:1fr;min-height:0}}
 </style>
@@ -80,7 +83,10 @@ th{color:var(--muted);font-weight:600}
       <button role="tab" data-v="live" aria-selected="false">සජීවී ප්‍රතිඵල · Live</button>
       <button role="tab" data-v="eval" aria-selected="false">ඇගයීම · Evaluation</button>
     </div>
-    <div class="live"><span class="pulse"></span><span id="n">0</span>&nbsp;ප්‍රතිචාර · responses</div>
+    <div class="hdr-actions">
+      <div class="live"><span class="pulse"></span><span id="n">0</span>&nbsp;ප්‍රතිචාර · responses</div>
+      <button class="btn warn" id="resetTop" type="button" title="Clear all responses">Reset</button>
+    </div>
   </header>
   <div class="banner" id="banner" hidden></div>
 
@@ -247,15 +253,47 @@ $('csv').onclick = () => {
   a.download = 'digital-marketing-poll-results.csv'; a.click();
 };
 
-// Reset (two clicks to confirm)
-$('reset').onclick = async () => {
-  if (!armed) { armed = true; $('reset').textContent = 'Click again to delete everything'; $('resetMsg').textContent = ''; setTimeout(() => { armed = false; $('reset').textContent = 'Clear all responses'; }, 5000); return; }
-  armed = false; $('reset').textContent = 'Clear all responses';
-  const r = await fetch('/api/reset', { method: 'POST', headers: { 'x-admin-key': $('key').value } });
+// Reset (two clicks to confirm). Header + Evaluation share the same flow.
+const KEY_STORE = 'krushi-admin-key';
+try { const k = sessionStorage.getItem(KEY_STORE); if (k) $('key').value = k; } catch {}
+
+async function doReset(btn, msgEl) {
+  const key = ($('key').value || '').trim() || prompt('Admin key') || '';
+  if (!key) { if (msgEl) msgEl.textContent = 'Admin key required'; return; }
+  $('key').value = key;
+  try { sessionStorage.setItem(KEY_STORE, key); } catch {}
+  if (!armed) {
+    armed = true;
+    btn.textContent = 'Click again to delete';
+    btn.classList.add('armed');
+    if (msgEl) msgEl.textContent = '';
+    setTimeout(() => {
+      if (!armed) return;
+      armed = false;
+      btn.textContent = btn.dataset.label;
+      btn.classList.remove('armed');
+    }, 5000);
+    return;
+  }
+  armed = false;
+  btn.textContent = btn.dataset.label;
+  btn.classList.remove('armed');
+  $('reset').textContent = $('reset').dataset.label;
+  $('resetTop').textContent = $('resetTop').dataset.label;
+  $('reset').classList.remove('armed');
+  $('resetTop').classList.remove('armed');
+  const r = await fetch('/api/reset', { method: 'POST', headers: { 'x-admin-key': key } });
   const d = await r.json().catch(() => ({}));
-  $('resetMsg').textContent = r.ok ? 'Cleared ✓' : (d.error || 'Failed');
+  const ok = r.ok ? 'Cleared ✓' : (d.error || 'Failed');
+  if (msgEl) msgEl.textContent = ok;
+  else alert(ok);
   refresh();
-};
+}
+
+$('reset').dataset.label = 'Clear all responses';
+$('resetTop').dataset.label = 'Reset';
+$('reset').onclick = () => doReset($('reset'), $('resetMsg'));
+$('resetTop').onclick = () => doReset($('resetTop'), $('resetMsg'));
 </script>
 </body>
 </html>
