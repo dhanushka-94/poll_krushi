@@ -3,13 +3,14 @@
 window.POLL = {
   title: { si: 'කෘෂිකර්මය සඳහා ඩිජිටල් අලෙවිකරණය', en: 'Digital Marketing for Agriculture' },
   questions: [
+    { id: 'age', type: 'single', section: ['ඔබ ගැන', 'About you'],
+      si: 'ඔබේ වයස් පරාසය', en: 'Your age range',
+      options: [['අවු. 25ට අඩු', 'Under 25'], ['25–34', '25–34'], ['35–44', '35–44'],
+                ['45–54', '45–54'], ['අවු. 55ට වැඩි', '55 and above']] },
     { id: 'role', type: 'single', section: ['ඔබ ගැන', 'About you'],
       si: 'ඔබේ තනතුර', en: 'Your role',
       options: [['කෘෂිකර්ම උපදේශක', 'Agriculture Instructor'], ['කෘෂි ව්‍යාප්ති නිලධාරී', 'Extension Officer'],
                 ['පුහුණුකරු / කථිකාචාර්ය', 'Trainer / Lecturer'], ['පරිපාලන නිලධාරී', 'Administrative Officer'], ['වෙනත්', 'Other']] },
-    { id: 'years', type: 'single', section: ['ඔබ ගැන', 'About you'],
-      si: 'සේවා කාලය', en: 'Years of service',
-      options: [['අවු. 5ට අඩු', 'Under 5 years'], ['අවු. 5–10', '5–10 years'], ['අවු. 10–20', '10–20 years'], ['අවු. 20ට වැඩි', 'Over 20 years']] },
     { id: 'devices', type: 'multi', section: ['උපාංග', 'Devices'],
       si: 'දිනපතා භාවිත කරන උපාංග', en: 'Devices you use daily (pick all)',
       options: [['ස්මාර්ට් ජංගම දුරකථනය', 'Smartphone'], ['ලැප්ටොප්', 'Laptop'], ['ඩෙස්ක්ටොප් පරිගණකය', 'Desktop'], ['ටැබ්ලට්', 'Tablet']] },

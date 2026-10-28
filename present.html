@@ -214,9 +214,10 @@ function renderEval(){
   }).join('');
 
   const roleQ = Q.find(q => q.id === 'role');
-  $('tbl').innerHTML = `<tr><th>#</th><th>නම · Name</th><th>තනතුර · Role</th><th>Skill avg</th><th>Quiz</th><th>Score</th><th>Level</th></tr>` +
-    (n ? scored.map((x, i) => `<tr><td>${i+1}</td><td>${esc(x.r.name || '—')}</td><td>${esc((roleQ.options[x.r.role]||['—'])[1])}</td><td>${x.s.skillAvg.toFixed(1)}</td><td>${x.s.quiz}/${x.s.quizTotal}</td><td>${x.s.readiness}</td><td>${esc(P.levels[x.s.level][1])}</td></tr>`).join('')
-       : '<tr><td colspan="7" class="en">No answers yet</td></tr>');
+  const ageQ = Q.find(q => q.id === 'age');
+  $('tbl').innerHTML = `<tr><th>#</th><th>නම · Name</th><th>වයස · Age</th><th>තනතුර · Role</th><th>Skill avg</th><th>Quiz</th><th>Score</th><th>Level</th></tr>` +
+    (n ? scored.map((x, i) => `<tr><td>${i+1}</td><td>${esc(x.r.name || '—')}</td><td>${esc((ageQ.options[x.r.age]||['—'])[1])}</td><td>${esc((roleQ.options[x.r.role]||['—'])[1])}</td><td>${x.s.skillAvg.toFixed(1)}</td><td>${x.s.quiz}/${x.s.quizTotal}</td><td>${x.s.readiness}</td><td>${esc(P.levels[x.s.level][1])}</td></tr>`).join('')
+       : '<tr><td colspan="8" class="en">No answers yet</td></tr>');
 }
 
 async function refresh(){
