@@ -80,6 +80,16 @@ td.wrap{white-space:normal;max-width:220px}
 .insight b{color:var(--paddy)}
 .level-chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;color:var(--leaf-ink)}
 .level-chip.l0{background:var(--bad)}.level-chip.l1{background:var(--paddy)}.level-chip.l2{background:var(--leaf)}
+.wa-box{display:grid;gap:14px}
+.wa-box label{display:grid;gap:6px;font-size:14px;color:var(--muted)}
+.wa-box input,.wa-box textarea{font:inherit;width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--field-2);color:var(--ink)}
+.wa-box textarea{min-height:110px;resize:vertical}
+.wa-steps{margin:0;padding-left:1.2em;display:grid;gap:6px;color:var(--muted);font-size:14px}
+.wa-list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:14px;padding:8px 0}
+.wa-list div{display:flex;justify-content:space-between;gap:12px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.wa-list div:last-child{border-bottom:0}
+.wa-list a{color:var(--leaf);text-decoration:none;font-weight:600}
+.wa-msg{font-size:14px;color:var(--muted);min-height:1.3em}
 @media (max-width:860px){.join{grid-template-columns:1fr;min-height:0}}
 </style>
 </head>
@@ -143,6 +153,34 @@ td.wrap{white-space:normal;max-width:220px}
     <div class="grid" id="breakGrid"></div>
     <div class="card wide"><h3>සියලු සහභාගිකයින්<small>Full roster — every answer</small></h3>
       <div class="tablewrap"><table id="tbl"></table></div></div>
+
+    <div class="card wide">
+      <h3>WhatsApp සමූහය<small>Create group for these participants</small></h3>
+      <div class="wa-box">
+        <p class="en" style="margin:0">WhatsApp does not allow apps to create groups automatically. Use this helper: save contacts, then create the group on your phone in under a minute.</p>
+        <label>සමූහ නාමය · Group name
+          <input id="waName" type="text" maxlength="100">
+        </label>
+        <div class="admin">
+          <button class="btn primary" id="waVcf" type="button">1. Download contacts (.vcf)</button>
+          <button class="btn" id="waCopyNums" type="button">Copy all numbers</button>
+          <button class="btn" id="waCopyInvite" type="button">Copy invite message</button>
+        </div>
+        <ol class="wa-steps">
+          <li>Download contacts and open the file on your phone → <b>Add all</b>.</li>
+          <li>WhatsApp → New group → select today’s participants.</li>
+          <li>Paste the group name above → Create.</li>
+          <li>Optional: paste the invite message as the first group chat.</li>
+        </ol>
+        <div><b id="waCount">0</b> <span class="en">members with WhatsApp numbers</span></div>
+        <div class="wa-list" id="waList"></div>
+        <label>ආරාධනා පණිවිඩය · Invite message
+          <textarea id="waInvite" readonly></textarea>
+        </label>
+        <div class="wa-msg" id="waMsg"></div>
+      </div>
+    </div>
+
     <div class="card wide"><h3>පරිපාලනය<small>Admin</small></h3>
       <div class="admin">
         <button class="btn primary" id="xlsx2">Download Excel</button>
@@ -324,7 +362,83 @@ function renderEval(){
       c[0]==='Level' ? `<span class="level-chip l${x.s.level}">${esc(c[1](x))}</span>` : esc(c[1](x))
     }</td>`).join('')}</tr>`).join('')
        : `<tr><td colspan="${cols.length}" class="en">No answers yet</td></tr>`);
+
+  renderWhatsAppGroup();
 }
+
+function toIntlWa(local){
+  const d = String(local || '').replace(/\D/g, '');
+  if (/^07\d{8}$/.test(d)) return '94' + d.slice(1);
+  if (/^94\d{9}$/.test(d)) return d;
+  return '';
+}
+function waMembers(){
+  const seen = new Set(), out = [];
+  data.forEach(r => {
+    const intl = toIntlWa(r.whatsapp);
+    if (!intl || seen.has(intl)) return;
+    seen.add(intl);
+    out.push({ name: (r.name || 'Participant').trim(), local: r.whatsapp, intl });
+  });
+  return out.sort((a, b) => a.name.localeCompare(b.name, 'si'));
+}
+function defaultGroupName(){
+  const d = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `කෘෂි ඩිජිටල් අලෙවිකරණය · ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+function renderWhatsAppGroup(){
+  const members = waMembers();
+  const nameInput = $('waName');
+  if (nameInput && !nameInput.dataset.touched) nameInput.value = defaultGroupName();
+  $('waCount').textContent = members.length;
+  $('waList').innerHTML = members.length
+    ? members.map(m => `<div><span>${esc(m.name)}</span><a href="https://wa.me/${m.intl}" target="_blank" rel="noopener">${esc(m.local)}</a></div>`).join('')
+    : '<div class="empty" style="padding:16px">No WhatsApp numbers yet</div>';
+  const gname = (nameInput && nameInput.value) || defaultGroupName();
+  $('waInvite').value =
+`නමස්කාරයි 👋
+ඔබව "${gname}" WhatsApp සමූහයට ආරාධනා කරමු.
+අද කෘෂිකර්මය සඳහා ඩිජිටල් අලෙවිකරණ පුහුණුවේ සහභාගිකයින් සඳහා මෙයයි.
+
+Hello — you are invited to the WhatsApp group "${gname}" for today's Digital Marketing for Agriculture training.`;
+}
+
+async function copyText(text, okMsg){
+  try {
+    await navigator.clipboard.writeText(text);
+    $('waMsg').textContent = okMsg;
+  } catch {
+    $('waMsg').textContent = 'Copy failed — select the text manually.';
+  }
+}
+function downloadWaContacts(){
+  const members = waMembers();
+  if (!members.length) { $('waMsg').textContent = 'No numbers to export.'; return; }
+  const gname = ($('waName').value || defaultGroupName()).trim();
+  const vcf = members.map(m =>
+`BEGIN:VCARD
+VERSION:3.0
+N:;${m.name};;;
+FN:${m.name}
+TEL;TYPE=CELL:+${m.intl}
+NOTE:${gname}
+END:VCARD`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([vcf], { type: 'text/vcard;charset=utf-8' }));
+  a.download = 'krushi-digital-marketing-whatsapp.vcf';
+  a.click();
+  $('waMsg').textContent = `Downloaded ${members.length} contacts. Open the file on your phone and add them.`;
+}
+
+$('waName').addEventListener('input', () => { $('waName').dataset.touched = '1'; renderWhatsAppGroup(); });
+$('waVcf').onclick = downloadWaContacts;
+$('waCopyNums').onclick = () => {
+  const members = waMembers();
+  if (!members.length) { $('waMsg').textContent = 'No numbers to copy.'; return; }
+  copyText(members.map(m => m.local).join('\n'), `Copied ${members.length} numbers.`);
+};
+$('waCopyInvite').onclick = () => copyText($('waInvite').value, 'Invite message copied.');
 
 async function refresh(){
   try {
