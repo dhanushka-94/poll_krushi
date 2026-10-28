@@ -13,7 +13,10 @@ export default async function handler(req, res) {
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = null; } }
   if (!b || typeof b !== 'object') return res.status(400).json({ error: 'Missing answers' });
 
-  const rec = {};
+  const name = typeof b.name === 'string' ? b.name.trim().replace(/\s+/g, ' ') : '';
+  if (name.length < 2 || name.length > 60) return res.status(400).json({ error: 'Bad answer: name' });
+
+  const rec = { name };
   for (const [k, n] of Object.entries(SINGLE)) {
     if (!isInt(b[k], n)) return res.status(400).json({ error: `Bad answer: ${k}` });
     rec[k] = b[k];

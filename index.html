@@ -46,6 +46,11 @@ h2.q{font-family:var(--si);font-size:clamp(24px,6.5vw,32px);line-height:1.2;marg
 .tile b{font-size:30px;font-variant-numeric:tabular-nums;color:var(--paddy)}
 .tile span{font-size:13px;color:var(--muted)}
 .err{background:#5a3324;border:1px solid var(--bad);border-radius:14px;padding:12px 14px}
+.namebox{width:100%;max-width:340px;display:grid;gap:10px;text-align:left}
+.namebox label{font-family:var(--si);font-weight:700;font-size:20px}
+.namebox input{font:inherit;width:100%;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink)}
+.namebox input:focus{border-color:var(--leaf)}
+.namebox .hint{font-size:13px;color:var(--muted);margin:0}
 .fade{animation:in .3s ease both}
 @keyframes in{from{opacity:.3;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
@@ -69,9 +74,36 @@ function intro(){
     <div class="seed" aria-hidden="true">🌱</div>
     <div class="eyebrow">පූර්ව ඇගයීම · Pre-training check</div>
     <h1>${esc(P.title.si)}</h1><p class="en" style="margin:0">${esc(P.title.en)}</p>
-    <p style="margin:6px 0 0">ප්‍රශ්න ${Q.length}යි · විනාඩි 3ක් පමණ<br><span class="en">${Q.length} questions · about 3 minutes · no names collected</span></p>
+    <p style="margin:6px 0 0">ප්‍රශ්න ${Q.length}යි · විනාඩි 3ක් පමණ<br><span class="en">${Q.length} questions · about 3 minutes</span></p>
     <button class="btn primary" id="go" style="width:100%;max-width:340px">ආරම්භ කරන්න · Start</button></div>`;
-  document.getElementById('go').onclick = () => go(0);
+  document.getElementById('go').onclick = askName;
+}
+
+function askName(){
+  app.innerHTML = `<div class="center fade">
+    <div class="seed" aria-hidden="true">✍️</div>
+    <div class="namebox">
+      <label for="name">ඔබේ නම<br><span class="en" style="font-family:var(--body);font-weight:600;font-size:14px">Your name</span></label>
+      <input id="name" type="text" maxlength="60" autocomplete="name" placeholder="නම ඇතුළත් කරන්න · Enter your name" autofocus>
+      <p class="hint">ප්‍රතිඵල තිරයේ ඔබේ නම පෙන්වයි · Your name is shown on the results screen</p>
+      <p class="err" id="nameErr" hidden></p>
+      <button class="btn primary" id="go" style="width:100%">ඊළඟ · Next →</button>
+    </div></div>`;
+  const input = document.getElementById('name');
+  const err = document.getElementById('nameErr');
+  const save = () => {
+    const name = input.value.trim().replace(/\s+/g, ' ');
+    if (name.length < 2) {
+      err.hidden = false;
+      err.textContent = 'කරුණාකර නම ඇතුළත් කරන්න · Please enter your name';
+      input.focus();
+      return;
+    }
+    ans.name = name;
+    go(0);
+  };
+  document.getElementById('go').onclick = save;
+  input.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); save(); } };
 }
 
 function header(q){

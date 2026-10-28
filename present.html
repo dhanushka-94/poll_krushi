@@ -98,7 +98,7 @@ th{color:var(--muted);font-weight:600}
       <ol class="steps">
         <li><b>1</b><span>ජංගම දුරකථනයේ කැමරාව විවෘත කරන්න<small>Open your phone camera</small></span></li>
         <li><b>2</b><span>QR කේතය ස්කෑන් කරන්න<small>Scan the QR code</small></span></li>
-        <li><b>3</b><span>විනාඩි 3කින් පිළිතුරු දෙන්න<small>Answer in 3 minutes · no names collected</small></span></li>
+        <li><b>3</b><span>නම ඇතුළත් කර ප්‍රශ්නවලට පිළිතුරු දෙන්න<small>Enter your name and answer in about 3 minutes</small></span></li>
       </ol>
     </div>
     <div class="qrside">
@@ -214,9 +214,9 @@ function renderEval(){
   }).join('');
 
   const roleQ = Q.find(q => q.id === 'role');
-  $('tbl').innerHTML = `<tr><th>#</th><th>තනතුර · Role</th><th>Skill avg</th><th>Quiz</th><th>Score</th><th>Level</th></tr>` +
-    (n ? scored.map((x, i) => `<tr><td>${i+1}</td><td>${esc((roleQ.options[x.r.role]||['—'])[1])}</td><td>${x.s.skillAvg.toFixed(1)}</td><td>${x.s.quiz}/${x.s.quizTotal}</td><td>${x.s.readiness}</td><td>${esc(P.levels[x.s.level][1])}</td></tr>`).join('')
-       : '<tr><td colspan="6" class="en">No answers yet</td></tr>');
+  $('tbl').innerHTML = `<tr><th>#</th><th>නම · Name</th><th>තනතුර · Role</th><th>Skill avg</th><th>Quiz</th><th>Score</th><th>Level</th></tr>` +
+    (n ? scored.map((x, i) => `<tr><td>${i+1}</td><td>${esc(x.r.name || '—')}</td><td>${esc((roleQ.options[x.r.role]||['—'])[1])}</td><td>${x.s.skillAvg.toFixed(1)}</td><td>${x.s.quiz}/${x.s.quizTotal}</td><td>${x.s.readiness}</td><td>${esc(P.levels[x.s.level][1])}</td></tr>`).join('')
+       : '<tr><td colspan="7" class="en">No answers yet</td></tr>');
 }
 
 async function refresh(){
@@ -235,12 +235,12 @@ refresh(); setInterval(refresh, 3000);
 
 // CSV
 $('csv').onclick = () => {
-  const head = ['#','time'];
+  const head = ['#','time','name'];
   Q.forEach(q => q.type === 'scale' ? q.rows.forEach(r => head.push('skill: ' + r[2])) : head.push(q.id));
   head.push('quiz_correct','readiness','level');
   const lines = [head];
   data.forEach((r, i) => {
-    const s = P.score(r), row = [i+1, new Date(r.t).toLocaleString()];
+    const s = P.score(r), row = [i+1, new Date(r.t).toLocaleString(), r.name || ''];
     Q.forEach(q => {
       if (q.type === 'scale') q.rows.forEach((_, ri) => row.push((r.skills||[])[ri] ?? ''));
       else { const a = r[q.id]; row.push((Array.isArray(a) ? a : [a]).map(k => (q.options[k]||['',''])[1]).join('; ')); }
