@@ -16,7 +16,11 @@ export default async function handler(req, res) {
   const name = typeof b.name === 'string' ? b.name.trim().replace(/\s+/g, ' ') : '';
   if (name.length < 2 || name.length > 60) return res.status(400).json({ error: 'Bad answer: name' });
 
-  const rec = { name };
+  let whatsapp = typeof b.whatsapp === 'string' ? b.whatsapp.replace(/[^\d+]/g, '').replace(/^\+/, '') : '';
+  if (whatsapp.startsWith('94') && whatsapp.length === 11) whatsapp = '0' + whatsapp.slice(2);
+  if (!/^07\d{8}$/.test(whatsapp)) return res.status(400).json({ error: 'Bad answer: whatsapp' });
+
+  const rec = { name, whatsapp };
   for (const [k, n] of Object.entries(SINGLE)) {
     if (!isInt(b[k], n)) return res.status(400).json({ error: `Bad answer: ${k}` });
     rec[k] = b[k];

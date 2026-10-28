@@ -48,9 +48,10 @@ h2.q{font-family:var(--si);font-size:clamp(24px,6.5vw,32px);line-height:1.2;marg
 .err{background:#5a3324;border:1px solid var(--bad);border-radius:14px;padding:12px 14px}
 .namebox{width:100%;max-width:340px;display:grid;gap:10px;text-align:left}
 .namebox label{font-family:var(--si);font-weight:700;font-size:20px}
-.namebox input{font:inherit;width:100%;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink)}
-.namebox input:focus{border-color:var(--leaf)}
-.namebox .hint{font-size:13px;color:var(--muted);margin:0}
+.namebox input,.phonebox input{font:inherit;width:100%;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink)}
+.namebox input:focus,.phonebox input:focus{border-color:var(--leaf)}
+.namebox .hint,.phonebox .hint{font-size:13px;color:var(--muted);margin:0}
+.phonebox{display:grid;gap:10px}
 .fade{animation:in .3s ease both}
 @keyframes in{from{opacity:.3;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
@@ -140,9 +141,23 @@ function render(){
     body = `<div class="opts">${q.rows.map((r,ri) => `<div class="row"><div><div class="s">${esc(r[0])}</div><div class="e">${esc(r[1])}</div></div>
       <div class="dots" role="radiogroup" aria-label="${esc(r[1])}">${[1,2,3,4,5].map(n => `<button class="dot ${v[ri]===n?'on':''}" data-r="${ri}" data-n="${n}" role="radio" aria-checked="${v[ri]===n}">${n}</button>`).join('')}</div>
       <div class="legend"><span>කර නැත · Never</span><span>විශ්වාසයෙන් · Confident</span></div></div>`).join('')}</div>` + nav(v.every(x => x > 0));
+  } else if (q.type === 'phone') {
+    const ok = !!normalizeWa(ans[q.id] || '');
+    body = `<div class="phonebox">
+      <input id="phone" type="tel" inputmode="tel" maxlength="15" autocomplete="tel"
+        value="${esc(ans[q.id] || '')}" placeholder="${esc(q.hint[0])} · ${esc(q.hint[1])}">
+      <p class="hint">${esc(q.hint[0])} · ${esc(q.hint[1])}</p>
+      <p class="err" id="phoneErr" hidden></p>
+    </div>` + nav(ok, 'අවසන් කරන්න · Finish');
   }
   app.innerHTML = `<div class="fade" style="display:grid;gap:16px">${header(q)}${body}</div>`;
   bind(q);
+}
+
+function normalizeWa(v) {
+  let n = String(v || '').replace(/[^\d+]/g, '').replace(/^\+/, '');
+  if (n.startsWith('94') && n.length === 11) n = '0' + n.slice(2);
+  return /^07\d{8}$/.test(n) ? n : '';
 }
 
 // Shuffle quiz options once per person, keep original index as the stored answer.
@@ -163,8 +178,40 @@ function bind(q){
   app.querySelectorAll('.dot').forEach(b => b.onclick = () => {
     const v = ans[q.id] || Array(q.rows.length).fill(0); v[+b.dataset.r] = +b.dataset.n; ans[q.id] = v; render();
   });
+  const phone = document.getElementById('phone');
+  if (phone) {
+    const sync = () => {
+      ans[q.id] = phone.value.trim();
+      const n = document.getElementById('next');
+      if (n) n.disabled = !normalizeWa(ans[q.id]);
+    };
+    phone.oninput = sync;
+    phone.onkeydown = e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const wa = normalizeWa(phone.value);
+        if (wa) { ans[q.id] = wa; go(i+1); }
+        else {
+          const err = document.getElementById('phoneErr');
+          if (err) { err.hidden = false; err.textContent = 'වලංගු WhatsApp අංකයක් ඇතුළත් කරන්න · Enter a valid WhatsApp number (07XXXXXXXX)'; }
+        }
+      }
+    };
+    setTimeout(() => phone.focus(), 50);
+  }
   const n = document.getElementById('next'), bk = document.getElementById('back');
-  if (n) n.onclick = () => go(i+1);
+  if (n) n.onclick = () => {
+    if (q.type === 'phone') {
+      const wa = normalizeWa(ans[q.id] || phone?.value || '');
+      if (!wa) {
+        const err = document.getElementById('phoneErr');
+        if (err) { err.hidden = false; err.textContent = 'වලංගු WhatsApp අංකයක් ඇතුළත් කරන්න · Enter a valid WhatsApp number (07XXXXXXXX)'; }
+        return;
+      }
+      ans[q.id] = wa;
+    }
+    go(i+1);
+  };
   if (bk) bk.onclick = () => { let j = i-1; if (Q[j] && Q[j].type === 'quiz') { /* quiz answers stay locked */ } go(j); };
 }
 

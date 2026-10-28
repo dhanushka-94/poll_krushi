@@ -164,7 +164,7 @@ function skillAvgs(q){
 function renderLive(){
   const n = data.length;
   if (!n) { $('liveGrid').innerHTML = '<div class="empty card wide">තවම පිළිතුරු නැත · No answers yet. Show the QR tab first.</div>'; return; }
-  $('liveGrid').innerHTML = Q.map(q => {
+  $('liveGrid').innerHTML = Q.filter(q => q.type !== 'phone').map(q => {
     let body = '';
     if (q.type === 'scale') {
       body = skillAvgs(q).map((a, ri) => bar(q.rows[ri][0], q.rows[ri][1], a.toFixed(1)+' / 5', (a/5)*100, a < 2.5 ? 'low' : a < 3.5 ? 'gold' : '')).join('');
@@ -215,9 +215,9 @@ function renderEval(){
 
   const roleQ = Q.find(q => q.id === 'role');
   const ageQ = Q.find(q => q.id === 'age');
-  $('tbl').innerHTML = `<tr><th>#</th><th>නම · Name</th><th>වයස · Age</th><th>තනතුර · Role</th><th>Skill avg</th><th>Quiz</th><th>Score</th><th>Level</th></tr>` +
-    (n ? scored.map((x, i) => `<tr><td>${i+1}</td><td>${esc(x.r.name || '—')}</td><td>${esc((ageQ.options[x.r.age]||['—'])[1])}</td><td>${esc((roleQ.options[x.r.role]||['—'])[1])}</td><td>${x.s.skillAvg.toFixed(1)}</td><td>${x.s.quiz}/${x.s.quizTotal}</td><td>${x.s.readiness}</td><td>${esc(P.levels[x.s.level][1])}</td></tr>`).join('')
-       : '<tr><td colspan="8" class="en">No answers yet</td></tr>');
+  $('tbl').innerHTML = `<tr><th>#</th><th>නම · Name</th><th>වයස · Age</th><th>තනතුර · Role</th><th>WhatsApp</th><th>Skill avg</th><th>Quiz</th><th>Score</th><th>Level</th></tr>` +
+    (n ? scored.map((x, i) => `<tr><td>${i+1}</td><td>${esc(x.r.name || '—')}</td><td>${esc((ageQ.options[x.r.age]||['—'])[1])}</td><td>${esc((roleQ.options[x.r.role]||['—'])[1])}</td><td>${esc(x.r.whatsapp || '—')}</td><td>${x.s.skillAvg.toFixed(1)}</td><td>${x.s.quiz}/${x.s.quizTotal}</td><td>${x.s.readiness}</td><td>${esc(P.levels[x.s.level][1])}</td></tr>`).join('')
+       : '<tr><td colspan="9" class="en">No answers yet</td></tr>');
 }
 
 async function refresh(){
@@ -244,6 +244,7 @@ $('csv').onclick = () => {
     const s = P.score(r), row = [i+1, new Date(r.t).toLocaleString(), r.name || ''];
     Q.forEach(q => {
       if (q.type === 'scale') q.rows.forEach((_, ri) => row.push((r.skills||[])[ri] ?? ''));
+      else if (q.type === 'phone') row.push(r[q.id] || '');
       else { const a = r[q.id]; row.push((Array.isArray(a) ? a : [a]).map(k => (q.options[k]||['',''])[1]).join('; ')); }
     });
     row.push(s.quiz, s.readiness, P.levels[s.level][1]); lines.push(row);

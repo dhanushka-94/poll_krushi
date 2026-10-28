@@ -52,7 +52,10 @@ window.POLL = {
     { id: 'challenge', type: 'single', section: ['අපේක්ෂා', 'Expectations'],
       si: 'ඔබේ ලොකුම බාධාව කුමක්ද?', en: 'What is your biggest challenge?',
       options: [['කාලය නැත', 'No time'], ['දැනුම / කුසලතා මදි', 'Not enough skills'], ['උපකරණ / අන්තර්ජාලය නැත', 'No equipment / internet'],
-                ['ගොවීන් අන්තර්ජාලයේ නැත', 'Farmers are not online'], ['නිල අනුමැතිය නැත', 'No official approval']] }
+                ['ගොවීන් අන්තර්ජාලයේ නැත', 'Farmers are not online'], ['නිල අනුමැතිය නැත', 'No official approval']] },
+    { id: 'whatsapp', type: 'phone', section: ['සම්බන්ධතා', 'Contact'],
+      si: 'ඔබේ WhatsApp අංකය', en: 'Your WhatsApp number',
+      hint: ['උදා: 07XXXXXXXX', 'e.g. 07XXXXXXXX'] }
   ]
 };
 
