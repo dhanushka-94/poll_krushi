@@ -173,7 +173,6 @@ function bind(q){
     const k = +b.dataset.k;
     if (q.type === 'multi') { const s = new Set(ans[q.id] || []); s.has(k) ? s.delete(k) : s.add(k); ans[q.id] = [...s].sort(); render(); return; }
     ans[q.id] = k; render();
-    if (q.type === 'single') setTimeout(() => go(i+1), 260);
   });
   app.querySelectorAll('.dot').forEach(b => b.onclick = () => {
     const v = ans[q.id] || Array(q.rows.length).fill(0); v[+b.dataset.r] = +b.dataset.n; ans[q.id] = v; render();
